@@ -32,6 +32,10 @@ from .dataset import (
     DefenceSpeechDataset,
     create_dataloaders
 )
+from .dsp_fxnlms import (
+    FxNLMSFilter,
+    ParallelHybridSystem
+)
 
 __all__ = [
     "Config",
@@ -65,5 +69,7 @@ __all__ = [
     "generate_synthetic_speech",
     "generate_synthetic_defence_noise",
     "DefenceSpeechDataset",
-    "create_dataloaders"
+    "create_dataloaders",
+    "FxNLMSFilter",
+    "ParallelHybridSystem"
 ]
