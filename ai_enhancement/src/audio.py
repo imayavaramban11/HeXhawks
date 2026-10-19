@@ -8,12 +8,21 @@ def load_audio(path: str, target_sr: int = 16000) -> torch.Tensor:
     Loads an audio file and resamples if necessary.
     Returns: Tensor of shape (C, T)
     """
-    waveform, sr = torchaudio.load(path)
+    # Use soundfile directly to avoid torchcodec / backend dependency issues
+    data, sr = sf.read(path, dtype="float32")
+    waveform = torch.from_numpy(data)
+    
+    # Ensure shape is (C, T)
+    if waveform.dim() == 1:
+        waveform = waveform.unsqueeze(0)
+    else:
+        waveform = waveform.t()  # sf.read returns (T, C)
+        
     if sr != target_sr:
         resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=target_sr)
         waveform = resampler(waveform)
     
-    # Ensure it's not silently changed to mono if it shouldn't be, but for this project we want mono
+    # Convert to mono if multi-channel
     if waveform.shape[0] > 1:
         waveform = torch.mean(waveform, dim=0, keepdim=True)
         

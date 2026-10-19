@@ -69,7 +69,7 @@ class ISTFT(nn.Module):
             center=self.center,
             normalized=False,
             onesided=True,
-            length=None, # explicitly ignore length to avoid NOLA window overlap add min: 1 error for center=False
+            length=length,
             return_complex=False
         )
         return waveform

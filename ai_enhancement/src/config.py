@@ -8,7 +8,7 @@ class AudioConfig:
     hop_length: int = 160 # 10ms at 16kHz
     win_length: int = 320
     window_fn: str = "hann"
-    center: bool = False # Must be False for streaming/causal STFT
+    center: bool = True
 
 @dataclass
 class Config:

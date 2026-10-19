@@ -1,9 +1,11 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
+
+# Distribution / packaging
 build/
 develop-eggs/
 dist/
@@ -21,11 +23,49 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Virtual Environments
 .env
 .venv
 venv/
 ENV/
+env/
 env.bak/
 venv.bak/
+
+# IDE & Editors
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Datasets & Large Audio Data (Do NOT commit to GitHub)
+ai_enhancement/datasets/
+ai_enhancement/data/clean_speech/*
+ai_enhancement/data/defence_noise/*
+!ai_enhancement/data/clean_speech/.gitkeep
+!ai_enhancement/data/defence_noise/.gitkeep
+datasets/
+data/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.tar.bz2
+*.tar.gz
+*.zip
+*.7z
+
+# Model weights & Checkpoints
+*.pt
+*.pth
+*.onnx
+*.engine
+checkpoints/
+runs/
+logs/
