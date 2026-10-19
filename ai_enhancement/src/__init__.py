@@ -1,4 +1,4 @@
-from .config import Config, AudioConfig, ModelConfig
+from .config import Config, AudioConfig, ModelConfig, DataConfig
 from .audio import load_audio, save_audio, normalize_audio
 from .stft import STFT, ISTFT
 from .modules import (
@@ -24,11 +24,20 @@ from .metrics import (
     compute_pesq,
     evaluate_batch
 )
+from .dataset import (
+    mix_audio_at_snr,
+    inject_impulsive_noise,
+    generate_synthetic_speech,
+    generate_synthetic_defence_noise,
+    DefenceSpeechDataset,
+    create_dataloaders
+)
 
 __all__ = [
     "Config",
     "AudioConfig",
     "ModelConfig",
+    "DataConfig",
     "load_audio",
     "save_audio",
     "normalize_audio",
@@ -50,5 +59,11 @@ __all__ = [
     "compute_snr_improvement",
     "compute_stoi",
     "compute_pesq",
-    "evaluate_batch"
+    "evaluate_batch",
+    "mix_audio_at_snr",
+    "inject_impulsive_noise",
+    "generate_synthetic_speech",
+    "generate_synthetic_defence_noise",
+    "DefenceSpeechDataset",
+    "create_dataloaders"
 ]
