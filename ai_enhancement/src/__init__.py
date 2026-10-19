@@ -10,6 +10,20 @@ from .modules import (
     apply_complex_mask
 )
 from .model import CausalFullSubNetPlus
+from .loss import (
+    compute_transient_weights,
+    ImpulseWeightedL1Loss,
+    MultiResolutionSTFTLoss,
+    CompositeDefenceLoss
+)
+from .metrics import (
+    compute_si_sdr,
+    compute_snr,
+    compute_snr_improvement,
+    compute_stoi,
+    compute_pesq,
+    evaluate_batch
+)
 
 __all__ = [
     "Config",
@@ -26,5 +40,15 @@ __all__ = [
     "CausalFullBandExtractor",
     "SubBandFeatureExtractor",
     "apply_complex_mask",
-    "CausalFullSubNetPlus"
+    "CausalFullSubNetPlus",
+    "compute_transient_weights",
+    "ImpulseWeightedL1Loss",
+    "MultiResolutionSTFTLoss",
+    "CompositeDefenceLoss",
+    "compute_si_sdr",
+    "compute_snr",
+    "compute_snr_improvement",
+    "compute_stoi",
+    "compute_pesq",
+    "evaluate_batch"
 ]
