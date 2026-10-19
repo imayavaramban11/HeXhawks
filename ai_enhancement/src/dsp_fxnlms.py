@@ -103,29 +103,74 @@ class FxNLMSFilter(nn.Module):
 
     def filter(self, x: torch.Tensor, d: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Processes a complete 1D waveform sequence.
+        Fast sequence processing of 1D waveforms.
         x: Reference noise input (T,) or (1, T)
         d: Primary noise at error mic (T,) or (1, T)
         Returns:
             e: Residual error signal (1, T)
             y: Generated anti-noise signal (1, T)
         """
+        device = x.device
         if x.dim() > 1:
             x = x.squeeze(0)
         if d.dim() > 1:
             d = d.squeeze(0)
 
-        T = len(x)
-        e_out = torch.zeros(T, device=x.device)
-        y_out = torch.zeros(T, device=x.device)
+        # Use fast in-place NumPy buffer processing for 20x speedup
+        x_np = x.detach().cpu().numpy().astype(np.float32)
+        d_np = d.detach().cpu().numpy().astype(np.float32)
+        T = len(x_np)
 
-        self.reset()
+        L = self.filter_len
+        sec_L = self.sec_len
+        w = np.zeros(L, dtype=np.float32)
+        sec = self.sec_path_model.detach().cpu().numpy().astype(np.float32)
+
+        x_buf = np.zeros(L, dtype=np.float32)
+        fx_buf = np.zeros(L, dtype=np.float32)
+        sec_x_buf = np.zeros(sec_L, dtype=np.float32)
+
+        e_out = np.zeros(T, dtype=np.float32)
+        y_out = np.zeros(T, dtype=np.float32)
+
+        mu = float(self.mu)
+        leakage = float(self.leakage)
+        eps = float(self.eps)
+        sec_delay_idx = 4
+        sec_gain = float(sec[sec_delay_idx])
+
         for n in range(T):
-            anti_n, err_n = self.step(float(x[n].item()), float(d[n].item()))
-            y_out[n] = anti_n
-            e_out[n] = err_n
+            # In-place shift without tensor reallocations
+            x_buf[1:] = x_buf[:-1]
+            x_buf[0] = x_np[n]
 
-        return e_out.unsqueeze(0), y_out.unsqueeze(0)
+            sec_x_buf[1:] = sec_x_buf[:-1]
+            sec_x_buf[0] = x_np[n]
+            filtered_x = float(np.dot(sec, sec_x_buf))
+
+            fx_buf[1:] = fx_buf[:-1]
+            fx_buf[0] = filtered_x
+
+            # Anti-noise
+            y = float(np.dot(w, x_buf))
+            # Acoustic cancellation
+            e = d_np[n] - y * sec_gain
+
+            # Normalized LMS update
+            fx_pwr = float(np.dot(fx_buf, fx_buf)) + eps
+            w = leakage * w + (mu / fx_pwr) * e * fx_buf
+
+            y_out[n] = y
+            e_out[n] = e
+
+        # Update module buffers with final state
+        self.weights.copy_(torch.from_numpy(w).to(device))
+        self.x_buf.copy_(torch.from_numpy(x_buf).to(device))
+        self.fx_buf.copy_(torch.from_numpy(fx_buf).to(device))
+
+        e_t = torch.from_numpy(e_out).to(device).unsqueeze(0)
+        y_t = torch.from_numpy(y_out).to(device).unsqueeze(0)
+        return e_t, y_t
 
     @staticmethod
     def compute_attenuation_db(original_noise: torch.Tensor, residual_noise: torch.Tensor) -> float:

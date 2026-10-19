@@ -34,8 +34,22 @@ class DataConfig:
     num_workers: int = 0            # 0 is safe on Windows
 
 @dataclass
+class TrainConfig:
+    epochs: int = 20
+    lr: float = 5e-4
+    weight_decay: float = 1e-4
+    max_grad_norm: float = 5.0
+    checkpoint_dir: str = "ai_enhancement/checkpoints"
+    save_every: int = 5
+    eval_every: int = 1
+    alpha_impulse: float = 5.0
+    tau_impulse: float = 0.1
+    lambda_mrstft: float = 0.5
+
+@dataclass
 class Config:
     audio: AudioConfig = field(default_factory=AudioConfig)
     model: ModelConfig = field(default_factory=ModelConfig)
     data: DataConfig = field(default_factory=DataConfig)
+    train: TrainConfig = field(default_factory=TrainConfig)
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
