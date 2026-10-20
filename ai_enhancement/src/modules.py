@@ -155,10 +155,10 @@ class SubBandFeatureExtractor(nn.Module):
         B, C, F_dim, T = x.shape
         # Pad along the frequency dimension (dim=2): left and right by k
         padded = F.pad(x, (0, 0, self.k, self.k), mode="constant", value=0.0)
-        # Unfold along frequency dimension: size = 2*k + 1, step = 1
-        windows = padded.unfold(dimension=2, size=2 * self.k + 1, step=1)  # (B, C, F_dim, T, 2K+1)
-        # Permute to (B, F_dim, T, C, 2K+1) and flatten the last two dimensions
-        subband = windows.permute(0, 2, 3, 1, 4).contiguous().view(B, F_dim, T, C * (2 * self.k + 1))
+        # Extract slices around each neighbor (ONNX-compatible operator)
+        slices = [padded[:, :, i:F_dim + i, :] for i in range(2 * self.k + 1)]
+        stacked = torch.stack(slices, dim=-1)  # (B, C, F_dim, T, 2K+1)
+        subband = stacked.permute(0, 2, 3, 1, 4).contiguous().view(B, F_dim, T, C * (2 * self.k + 1))
         return subband
 
 

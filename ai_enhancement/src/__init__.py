@@ -1,4 +1,4 @@
-from .config import Config, AudioConfig, ModelConfig, DataConfig
+from .config import Config, AudioConfig, ModelConfig, DataConfig, TrainConfig
 from .audio import load_audio, save_audio, normalize_audio
 from .stft import STFT, ISTFT
 from .modules import (
@@ -36,12 +36,17 @@ from .dsp_fxnlms import (
     FxNLMSFilter,
     ParallelHybridSystem
 )
+from .streaming import (
+    StreamingAudioBuffer,
+    StreamingEnhancer
+)
 
 __all__ = [
     "Config",
     "AudioConfig",
     "ModelConfig",
     "DataConfig",
+    "TrainConfig",
     "load_audio",
     "save_audio",
     "normalize_audio",
@@ -71,5 +76,7 @@ __all__ = [
     "DefenceSpeechDataset",
     "create_dataloaders",
     "FxNLMSFilter",
-    "ParallelHybridSystem"
+    "ParallelHybridSystem",
+    "StreamingAudioBuffer",
+    "StreamingEnhancer"
 ]

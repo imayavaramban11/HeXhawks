@@ -83,19 +83,35 @@ HeXhawks/
 │   └── workflows/
 │       └── ci.yml               # Automated CI test pipeline
 ├── ai_enhancement/
-│   ├── configs/                 # Model and training hyperparameters
-│   ├── data/                    # Local sample data directories (.gitkeep)
+│   ├── configs/                 # Hyperparameters (Audio, Model, Data, Train)
+│   ├── data/                    # Sample data directories (.gitkeep)
 │   │   ├── clean_speech/
 │   │   └── defence_noise/
-│   ├── src/                     # Core enhancement pipeline
-│   │   ├── __init__.py
+│   ├── src/                     # Core system modules
+│   │   ├── __init__.py          # Public Python API
 │   │   ├── audio.py             # Audio I/O, resampling, and normalization
-│   │   ├── config.py            # STFT and runtime configuration
-│   │   └── stft.py              # PyTorch STFT / iSTFT modules
-│   ├── tests/                   # Automated unit tests
-│   │   ├── test_audio.py        # Audio pipeline tests
-│   │   └── test_stft.py         # STFT/iSTFT reconstruction tests
+│   │   ├── config.py            # AudioConfig, ModelConfig, DataConfig, TrainConfig
+│   │   ├── dataset.py           # On-the-fly dynamic SNR mixer & impulse injector
+│   │   ├── dsp_fxnlms.py        # Sub-ms FxNLMS adaptive filter & parallel hybrid engine
+│   │   ├── loss.py              # ImpulseWeightedL1Loss & MultiResolutionSTFTLoss
+│   │   ├── metrics.py           # SI-SDR, SNR improvement, STOI, and PESQ
+│   │   ├── model.py             # CausalFullSubNetPlus (216k parameters)
+│   │   ├── modules.py           # CausalConv1d, MulCA ChannelAttention, TCN, SubBand
+│   │   ├── stft.py              # PyTorch STFT and iSTFT reconstruction
+│   │   └── streaming.py         # Sub-20ms real-time sliding buffer inferencer
+│   ├── tests/                   # 33 automated unit tests (100% passing)
+│   │   ├── test_audio.py
+│   │   ├── test_dataset.py
+│   │   ├── test_dsp_fxnlms.py
+│   │   ├── test_loss_and_metrics.py
+│   │   ├── test_model.py
+│   │   ├── test_stft.py
+│   │   ├── test_streaming_and_export.py
+│   │   └── test_train_and_eval.py
 │   ├── download_datasets.py     # Automated dataset setup tool
+│   ├── train.py                 # Multi-epoch AdamW training & checkpointing
+│   ├── evaluate.py              # 4-stage benchmark evaluation suite
+│   ├── export.py                # Standalone ONNX edge deployment exporter
 │   └── requirements.txt         # Python dependencies
 ├── architecture_flowchart.md    # Detailed architecture documentation
 ├── complete_project_guide.md    # Full engineering & algorithmic manual
@@ -132,10 +148,34 @@ pip install -r ai_enhancement/requirements.txt
 
 ### 3. Run Unit Tests
 
-Verify that your audio processing pipeline and STFT reconstruction work correctly:
+Execute the comprehensive test suite (33 tests covering causality, reconstruction, FxNLMS, and ONNX export):
 
 ```bash
 pytest ai_enhancement/tests -v
+```
+
+### 4. Training the Model
+
+Train the Causal FullSubNet+ model using on-the-fly dynamic mixing with impulse-aware loss:
+
+```bash
+python ai_enhancement/train.py --epochs 20 --batch-size 4 --lr 5e-4
+```
+
+### 5. Running the 4-Stage Benchmark
+
+Evaluate unprocessed noisy vs. physical ANC vs. AI enhancement vs. the full hybrid system:
+
+```bash
+python ai_enhancement/evaluate.py --samples 16 --save-json benchmark_results.json
+```
+
+### 6. Exporting to Edge Hardware (ONNX / Jetson)
+
+Export trained weights to a lightweight, standalone ONNX model (< 1 MB) for embedded deployment:
+
+```bash
+python ai_enhancement/export.py --output ai_enhancement/checkpoints/aegis_anc.onnx
 ```
 
 ---
